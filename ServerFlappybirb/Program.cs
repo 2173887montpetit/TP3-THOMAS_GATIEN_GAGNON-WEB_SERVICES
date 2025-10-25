@@ -1,4 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using ServerFlappybirb.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<ServerFlappybirbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ServerFlappybirbContext") ?? throw new InvalidOperationException("Connection string 'ServerFlappybirbContext' not found.")));
 
 // Add services to the container.
 
@@ -18,6 +23,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
