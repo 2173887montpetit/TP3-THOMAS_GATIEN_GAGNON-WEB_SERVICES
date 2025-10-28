@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Game } from './gameLogic/game';
 import { MaterialModule } from '../material.module';
 import { CommonModule } from '@angular/common';
+import { FlappyService } from '../services/FlappyService.service';
 
 @Component({
   selector: 'app-play',
@@ -11,11 +12,12 @@ import { CommonModule } from '@angular/common';
   styleUrl: './play.component.css'
 })
 export class PlayComponent implements OnInit{
+  [x: string]: any;
 
   game : Game | null = null;
   scoreSent : boolean = false;
 
-  constructor(){}
+  constructor(private flappyService: FlappyService){}
 
   ngOnDestroy(): void {
     // Ceci est crotté mais ne le retirez pas sinon le jeu bug.
@@ -33,6 +35,13 @@ export class PlayComponent implements OnInit{
   }
 
   sendScore(){
+
+    this.flappyService.GetScore().then((response) => {
+      console.log("Score envoyé avec succès :", response);
+    }).catch((error) => {
+      console.error("Erreur lors de l'envoi du score :", error);
+    });
+
     if(this.scoreSent) return;
 
     this.scoreSent = true;

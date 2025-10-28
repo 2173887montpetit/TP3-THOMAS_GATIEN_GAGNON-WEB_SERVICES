@@ -38,7 +38,9 @@ export class Game{
         let scorePanel : HTMLElement = document.querySelector("#darkScreen")!;
         scorePanel.style.visibility = "visible";
         sessionStorage.setItem("score", JSON.stringify(this.score));
+        console.log(this.score);
         sessionStorage.setItem("time", JSON.stringify(this.time));
+        console.log(this.time);
         let displayScore : HTMLElement = document.querySelector("#lastScore")!;
         displayScore.textContent = "Score : " + this.score;
 

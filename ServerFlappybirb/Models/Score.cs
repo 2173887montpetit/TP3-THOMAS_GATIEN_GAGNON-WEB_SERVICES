@@ -8,7 +8,7 @@
 
         public string? date { get; set; }
 
-        public int timeInSeconds { get; set; }
+        public double timeInSeconds { get; set; }
 
         public int scoreValue { get; set; }
 

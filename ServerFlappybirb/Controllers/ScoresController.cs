@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServerFlappybirb.Data;
+using ServerFlappybirb.DTOs;
 using ServerFlappybirb.Models;
 using ServerFlappybirb.Services;
 
@@ -82,12 +84,17 @@ namespace ServerFlappybirb.Controllers
         // POST: api/Scores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Score>> PostScore(Score score)
+        public async Task<ActionResult<ScoreDTO>> PostScore(ScoreDTO scoreDTO)
         {
-            _context.Score.Add(score);
-            await _context.SaveChangesAsync();
+            var result = await _services.Create(scoreDTO);
 
-            return CreatedAtAction("GetScore", new { id = score.id }, score);
+            if (result.Result is UnauthorizedResult)
+                return Unauthorized(new { Message = "Utilisateur non valide ou non authentifié" });
+
+            if (result.Value == null)
+                return BadRequest(new { Message = "Erreur lors de l'enregistrement du score" });
+
+            return Ok(result);
         }
         private bool ScoreExists(int id)
         {
