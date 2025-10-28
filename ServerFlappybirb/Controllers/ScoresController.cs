@@ -1,36 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServerFlappybirb.Data;
 using ServerFlappybirb.Models;
+using ServerFlappybirb.Services;
 
 namespace ServerFlappybirb.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class ScoresController : ControllerBase
     {
         private readonly ServerFlappybirbContext _context;
+        private readonly ServicesScores _services;
 
-        public ScoresController(ServerFlappybirbContext context)
+        public ScoresController(ServerFlappybirbContext context, ServicesScores services )
         {
             _context = context;
+            _services = services;
         }
 
         // GET: api/Scores
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Score>>> GetScore()
+        public async Task<ActionResult<IEnumerable<Score>>> GetPublicScores()
         {
-            return await _context.Score.ToListAsync();
+            List<Score> scores = await _services.GetAll();
+            if (scores == null) return StatusCode(StatusCodes.Status404NotFound);
+            return Ok(scores);
         }
 
         // GET: api/Scores/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Score>> GetScore(int id)
+        public async Task<ActionResult<Score>> GetMyScores(int id)
         {
             var score = await _context.Score.FindAsync(id);
 
@@ -45,7 +51,7 @@ namespace ServerFlappybirb.Controllers
         // PUT: api/Scores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutScore(int id, Score score)
+        public async Task<IActionResult> ChangeScoreVisibiity(int id, Score score)
         {
             if (id != score.id)
             {
@@ -83,23 +89,6 @@ namespace ServerFlappybirb.Controllers
 
             return CreatedAtAction("GetScore", new { id = score.id }, score);
         }
-
-        // DELETE: api/Scores/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteScore(int id)
-        {
-            var score = await _context.Score.FindAsync(id);
-            if (score == null)
-            {
-                return NotFound();
-            }
-
-            _context.Score.Remove(score);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
         private bool ScoreExists(int id)
         {
             return _context.Score.Any(e => e.id == id);
