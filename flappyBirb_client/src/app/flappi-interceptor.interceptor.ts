@@ -1,16 +1,14 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn } from "@angular/common/http";
 
-export const flappiInterceptorInterceptor: HttpInterceptorFn = (req, next) => {
-  return next(req);
-};
-export const authInterceptor : HttpInterceptorFn = (req, next) => {
-
-    req = req.clone({
-        setHeaders:{
-            "Content-Type" : "application/json",
-            "Authorization" : "Bearer " + localStorage.getItem("token") // changez la clé si vous avez stocké le token ailleurs
-        }
-    });
-
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        req = req.clone({
+            setHeaders: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+    }
     return next(req);
 };

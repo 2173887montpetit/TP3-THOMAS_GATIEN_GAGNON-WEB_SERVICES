@@ -15,6 +15,20 @@ builder.Services.AddDbContext<ServerFlappybirbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("ServerFlappybirbContext") ?? throw new InvalidOperationException("Connection string 'ServerFlappybirbContext' not found."));
 options.UseLazyLoadingProxies(); // Ceci
 });
+
+builder.Services.AddIdentity<Users, IdentityRole>().AddEntityFrameworkStores<ServerFlappybirbContext>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 5;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+});
+
+
+
 builder.Services.AddAuthentication(options =>
 {
     // Indiquer à ASP.NET Core que nous procéderons à l'authentification par le biais d'un JWT
@@ -37,8 +51,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddIdentity<Users, IdentityRole>().AddEntityFrameworkStores<ServerFlappybirbContext>(); // Et ceci
+ // Et ceci
 // Add services to the container.
+
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -55,6 +71,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ServicesScores>();
 
 var app = builder.Build();
@@ -70,6 +87,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

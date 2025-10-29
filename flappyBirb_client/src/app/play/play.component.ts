@@ -36,15 +36,16 @@ export class PlayComponent implements OnInit{
 
   sendScore(){
 
+  if(this.scoreSent) return;
+
+    this.scoreSent = true;
+
     this.flappyService.GetScore().then((response) => {
       console.log("Score envoyé avec succès :", response);
     }).catch((error) => {
       console.error("Erreur lors de l'envoi du score :", error);
     });
 
-    if(this.scoreSent) return;
-
-    this.scoreSent = true;
     
     // ██ Appeler une requête pour envoyer le score du joueur ██
     // Le score est dans sessionStorage.getItem("score")

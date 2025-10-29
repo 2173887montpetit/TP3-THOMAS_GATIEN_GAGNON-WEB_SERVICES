@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ScoreDTO } from '../DTOs/ScoreDTO';
 import { Score } from '../models/score';
-import { lastValueFrom } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
+import { PublicScoreDTO } from '../DTOs/PublicScoreDTO';
 
 const domain : string = "https://localhost:7278/";
 
@@ -23,5 +24,14 @@ GetScore(){
   return x;
 }
 
+// Récupère les scores publics
+async getPublicScores(): Promise<any> {
+  let x = await lastValueFrom(this.http.get<any>(domain + 'api/Scores/GetPublicScores'));
+  console.log(x);
+    return x ?? [];
+
+}
+
+// Récupère les scores de l'utilisateur connecté (nécessite Authorization)
 
 }

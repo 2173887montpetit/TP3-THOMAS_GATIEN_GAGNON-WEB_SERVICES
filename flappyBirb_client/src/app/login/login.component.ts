@@ -42,10 +42,10 @@ export class LoginComponent {
     // Appel au service d'authentification ici
     const x = await lastValueFrom(this.http.post<any>(domain + "api/Users/login", logUser));
     // Redirection si la connexion a réussi :
-    this.route.navigate(["/play"]);
+  
     localStorage.setItem("token", x.token);
     console.log(x.token);
-    return x;
+    this.route.navigate(["/play"]);
     
   }
 
@@ -58,7 +58,7 @@ export class LoginComponent {
     this.registerPassword = password;
     this.registerPasswordConfirm = passwordConfirm;
 
-    const x = await lastValueFrom(this.http.post<any>(domain + "api/Users/register", regUser));
+    const x = await lastValueFrom(this.http.post<any>(domain + "api/Users/Register", regUser));
 
     return x;
   }

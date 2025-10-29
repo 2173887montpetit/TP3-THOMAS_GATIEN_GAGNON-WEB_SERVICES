@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Humanizer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServerFlappybirb.Data;
@@ -20,85 +23,59 @@ namespace ServerFlappybirb.Controllers
     {
         private readonly ServerFlappybirbContext _context;
         private readonly ServicesScores _services;
+        private readonly UserManager<Users> _userManager;
 
-        public ScoresController(ServerFlappybirbContext context, ServicesScores services )
+        public ScoresController(ServerFlappybirbContext context, ServicesScores services, UserManager<Users> userManager )
         {
             _context = context;
             _services = services;
+            _userManager = userManager;
         }
 
-        // GET: api/Scores
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Score>>> GetPublicScores()
-        {
-            List<Score> scores = await _services.GetAll();
-            if (scores == null) return StatusCode(StatusCodes.Status404NotFound);
-            return Ok(scores);
-        }
-
-        // GET: api/Scores/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Score>> GetMyScores(int id)
-        {
-            var score = await _context.Score.FindAsync(id);
-
-            if (score == null)
-            {
-                return NotFound();
-            }
-
-            return score;
-        }
-
-        // PUT: api/Scores/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> ChangeScoreVisibiity(int id, Score score)
-        {
-            if (id != score.id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(score).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ScoreExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
 
         // POST: api/Scores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ScoreDTO>> PostScore(ScoreDTO scoreDTO)
+        public async Task<ActionResult<Score>> PostScore(ScoreDTO scoreDTO)
         {
-            var result = await _services.Create(scoreDTO);
-
-            if (result.Result is UnauthorizedResult)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
                 return Unauthorized(new { Message = "Utilisateur non valide ou non authentifié" });
 
-            if (result.Value == null)
+            Users? user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return Unauthorized(new { Message = "Utilisateur non valide ou non authentifié" });
+
+            Score score = new Score
+            {
+                pseudo = user.UserName,
+                date = DateTime.Now,
+                timeInSeconds = scoreDTO.Time,
+                scoreValue = scoreDTO.Score,
+                isPublic = true
+            };
+
+            var result = await _services.Create(score);
+
+            if (result == null || result.Value == null)
                 return BadRequest(new { Message = "Erreur lors de l'enregistrement du score" });
 
-            return Ok(result);
+            return Ok(result.Value);
         }
-        private bool ScoreExists(int id)
+
+        //[HttpGet]
+        //public async Task<IEnumerable<Score>> GetMyScore()
+        //{
+
+        //}
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<PublicScoreDTO>>> GetPublicScores()
         {
-            return _context.Score.Any(e => e.id == id);
+            var scores = await _services.GetAll();
+
+            return Ok(scores);
         }
     }
 }
+

@@ -4,9 +4,9 @@
     {
 
        public int id { get; set; }
-        public string? pseudo { get; set; }
+        public string pseudo { get; set; }
 
-        public string? date { get; set; }
+        public DateTime date { get; set; }
 
         public double timeInSeconds { get; set; }
 

@@ -42,8 +42,8 @@
                 </tr>
                 <tr *ngFor="let s of publicScores">
                     <td>{{s.pseudo}}</td>
-                    <td>{{s.scoreValue}}</td>
-                    <td>{{s.timeInSeconds | round00}}</td>
+                    <td>{{s.value}}</td>
+                    <td>{{s.tempsEnSecondes | round00}}</td>
                     <td>{{s.date | date:'MMM d, yyyy'}}</td>
                 </tr>
             </table>
