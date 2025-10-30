@@ -11,10 +11,12 @@ namespace ServerFlappybirb.Services
     public class ServicesScores
     {
         private readonly ServerFlappybirbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public ServicesScores(ServerFlappybirbContext flappyContext)
+        public ServicesScores(ServerFlappybirbContext flappyContext, UserManager<Users> userManager)
         {
             _context = flappyContext;
+            _userManager = userManager;
         }
 
         public async Task<ActionResult<IEnumerable<PublicScoreDTO>>> GetAll()
@@ -33,6 +35,21 @@ namespace ServerFlappybirb.Services
                 .ToListAsync();
 
             return topScores;
+        }
+        public async Task<List<MyScoreDTO>> GetMyScoresAsync(string username)
+        {
+            var MyScores = await _context.Score
+                .Where(s => s.pseudo == username)
+                .OrderByDescending(s => s.scoreValue)
+                .Select(s => new MyScoreDTO
+                {
+                    scoreValue = s.scoreValue,
+                    timeInSeconds = s.timeInSeconds,
+                    date = s.date,
+                    isPublic = s.isPublic
+                })
+                .ToListAsync();
+            return MyScores;
         }
 
         public async Task<ActionResult<Score>> Create(Score score)

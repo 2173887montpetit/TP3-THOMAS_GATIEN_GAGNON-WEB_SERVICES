@@ -6,6 +6,7 @@ import { Round00Pipe } from '../pipes/round-00.pipe';
 import { firstValueFrom } from 'rxjs';
 import { FlappyService } from '../services/FlappyService.service';
 import { PublicScoreDTO } from '../DTOs/PublicScoreDTO';
+import { MyScoreDTO } from '../DTOs/MyScoreDTO';
 
 @Component({
   selector: 'app-score',
@@ -16,7 +17,7 @@ import { PublicScoreDTO } from '../DTOs/PublicScoreDTO';
 })
 export class ScoreComponent {
 
-  myScores : Score[] = [];
+  myScores : MyScoreDTO[] = [];
   publicScores : PublicScoreDTO[] = [];
   
   constructor(private flappyService: FlappyService) {}
@@ -24,12 +25,25 @@ export class ScoreComponent {
   async ngOnInit() {
     try {
       const response = await this.flappyService.getPublicScores();
-      console.log('Full API response:', response);
+      const myResponse = await this.flappyService.getUserScores();
+      console.log('Public scores response:', response);
+      console.log('My scores response:', myResponse);
 
-      // ✅ Extract the array inside "value" (your API returns { result, value })
-      this.publicScores = response?.value ?? [];
+      // Support both direct array and wrapper { value: [...] }
+      const publicArr = Array.isArray(response) ? response : (Array.isArray((response as any)?.value) ? (response as any).value : []);
+      this.publicScores = publicArr;
 
-      console.log('Public scores array:', this.publicScores);
+      const myArr = Array.isArray(myResponse) ? myResponse : (Array.isArray((myResponse as any)?.value) ? (myResponse as any).value : []);
+  
+      this.myScores = myArr.map((item: any) => new MyScoreDTO(
+        item.scoreValue ?? item.value ?? 0,
+        item.timeInSeconds ?? item.tempsEnSecondes ?? item.time ?? 0,
+        item.date ?? '',
+        item.isPublic ?? false
+      ));
+
+      console.log('Public scores array (final):', this.publicScores);
+      console.log('My scores array (mapped):', this.myScores);
     } catch (error) {
       console.error('Error loading public scores:', error);
       this.publicScores = [];
@@ -37,8 +51,8 @@ export class ScoreComponent {
 
   }
 
-  async changeScoreVisibility(score : Score){
-
+  async changeScoreVisibility(score: MyScoreDTO){
+    
     
   }
 

@@ -63,11 +63,17 @@ namespace ServerFlappybirb.Controllers
             return Ok(result.Value);
         }
 
-        //[HttpGet]
-        //public async Task<IEnumerable<Score>> GetMyScore()
-        //{
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<MyScoreDTO>>> GetMyScores()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
 
-        //}
+            var scores = await _services.GetMyScoresAsync(user.UserName);
+            return Ok(scores);
+        }
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<PublicScoreDTO>>> GetPublicScores()

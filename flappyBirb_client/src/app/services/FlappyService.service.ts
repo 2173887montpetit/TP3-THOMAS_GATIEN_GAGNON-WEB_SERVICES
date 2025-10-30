@@ -32,6 +32,13 @@ async getPublicScores(): Promise<any> {
 
 }
 
+
 // Récupère les scores de l'utilisateur connecté (nécessite Authorization)
+async getUserScores(): Promise<any> {
+  let x = await lastValueFrom(this.http.get<any>(domain + 'api/Scores/GetMyScores'));
+  console.log(x);
+  return x ?? [];
+
+}
 
 }
